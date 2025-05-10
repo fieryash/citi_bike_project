@@ -1,0 +1,58 @@
+# Byte-compiled / cache / temp files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+
+# Jupyter and IPython
+.ipynb_checkpoints/
+
+# Data, artifacts, and outputs
+mlruns/
+mlartifacts/
+tmp_raw/
+predictions.parquet
+predictions_backfill.parquet
+
+# Hopsworks/MLflow config and secrets
+*.log
+*.db
+.env
+*.env
+*.secret
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+*.tmp
+~$*
+
+# Presentations and outputs
+presentation/*.pptx
+
+# Python virtual environments
+.venv/
+venv/
+ENV/
+
+# Misc
+*.zip
+*.parquet
+*.csv
+
+# Ignore test outputs
+feature_engineering/tests.py
+
+# Ignore monitoring logs
+monitoring/*.log
+
+# Ignore Streamlit cache
+.streamlit/
+
+# Ignore Hopsworks project creation script output
+hopsworks_project_create.py

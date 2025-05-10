@@ -1,0 +1,13 @@
+pandas
+numpy
+pyarrow
+requests
+lightgbm
+scikit-learn>=1.4
+mlflow
+hopsworks
+hydra-core
+pyyaml
+streamlit
+matplotlib
+plotly

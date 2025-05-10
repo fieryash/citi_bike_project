@@ -12,6 +12,8 @@ CFG = safe_load(open("./configs/config.yaml"))
 
 # Force API key for Hopsworks
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 FORCED_API_KEY = os.getenv("HOPSWORKS_API_KEY")
 HOPS_HOST = CFG["project"].get("host", "c.app.hopsworks.ai")

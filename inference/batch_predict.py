@@ -17,7 +17,11 @@ import numpy as np
 import mlflow
 import hopsworks
 import yaml
+from dotenv import load_dotenv
+import mlflow
 import os
+
+load_dotenv()
 
 FORCED_API_KEY = os.getenv("HOPSWORKS_API_KEY")
 # ─────────────────── Config ────────────────────

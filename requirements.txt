@@ -11,3 +11,4 @@ pyyaml
 streamlit
 matplotlib
 plotly
+python-dotenv

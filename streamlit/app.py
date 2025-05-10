@@ -40,8 +40,6 @@ def load_config():
     return cfg
 
 CFG = load_config()
-st.write("Using project:", CFG)
-
 # -------------------------------------------------------------------
 # 1️⃣  Sidebar navigation
 # -------------------------------------------------------------------

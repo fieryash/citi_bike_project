@@ -33,13 +33,14 @@ def load_config():
     project_cfg = cfg["project"]
     secrets_proj = st.secrets.get("project", {})
 
-    project_cfg["name"] = project_cfg.get("name") or secrets_proj.get("name")
-    project_cfg["host"] = project_cfg.get("host") or secrets_proj.get("host", "c.app.hopsworks.ai")
-    project_cfg["api_key"] = project_cfg.get("api_key") or secrets_proj.get("api_key")
+    project_cfg["name"] = secrets_proj.get("name")
+    project_cfg["host"] = secrets_proj.get("host", "c.app.hopsworks.ai")
+    project_cfg["api_key"] = secrets_proj.get("api_key")
 
     return cfg
 
 CFG = load_config()
+st.write("Using project:", CFG)
 
 # -------------------------------------------------------------------
 # 1️⃣  Sidebar navigation

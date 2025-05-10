@@ -102,7 +102,7 @@ def main():
         description       = "24-hour ahead Citi Bike demand forecasts",
         time_travel_format= "Hudi",
     )
-    pred_fg.insert(pred_df, write_options={"wait_for_job": True})
+    pred_fg.insert(pred_df, write_options={"wait_for_job": False})
     print(f"✅  Stored {len(pred_df)} predictions up to {pred_df['hour'].max()}")
 
 if __name__ == "__main__":

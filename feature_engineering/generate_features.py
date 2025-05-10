@@ -4,7 +4,7 @@ import datetime as dt
 
 CFG = yaml.safe_load(open("./configs/config.yaml"))
 
-FORCED_API_KEY = "4ktTHztzakUY85SG.tqOUvGeeLvSK1deXiDLKbKBhesmJcdrqcLiY9d2KXPkwZQKIwxSkK7GQ70xJM95d"
+FORCED_API_KEY = CFG["project"]["api_key"]
 HOPS_HOST = CFG["project"].get("host", "c.app.hopsworks.ai")
 LOCAL_TZ  = pytz.timezone(CFG["project"]["timezone"])      # America/New_York
 

@@ -3,23 +3,39 @@ name: Feature Engineering
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'   # hourly
+    - cron: '0 * * * *'  # runs at the top of every hour
 
 jobs:
   feature-engineering:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install deps
+
+      - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Fetch latest data (hourly, skip if no new data)
+
+      - name: Fetch latest data (skip if no new data)
         env:
           HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
-        run: python data_engineering/fetch_data.py --hourly
+        run: |
+          echo "Fetching data..."
+          python data_engineering/fetch_data.py --hourly
+
       - name: Preprocess raw data
-        run: python data_engineering/preprocess.py
-      - name: Generate features (if new data)
-        run: python feature_engineering/generate_features.py
+        run: |
+          echo "Preprocessing data..."
+          python data_engineering/preprocess.py
+
+      - name: Generate features (only if new data exists)
+        env:
+          HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
+        run: |
+          echo "Generating features..."
+          python feature_engineering/generate_features.py

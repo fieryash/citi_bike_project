@@ -3,23 +3,34 @@ name: Model Training
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'  # hourly
+    - cron: '0 * * * *'  # runs hourly at the start of the hour
 
 jobs:
   training:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install deps
+
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
+
       - name: Generate features (if new data)
         env:
           HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
-        run: python feature_engineering/generate_features.py
+        run: |
+          echo "Checking and generating features..."
+          python feature_engineering/generate_features.py
+
       - name: Train model (only if new data)
         env:
           HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
-        run: python modeling/train.py
+        run: |
+          echo "Starting model training..."
+          python modeling/train.py

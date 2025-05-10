@@ -1,12 +1,12 @@
-name: Batch Inference
+name: Fetch Latest Data
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'  # runs hourly at the start of the hour
+    - cron: '0 * * * *'  # runs at the top of every hour
 
 jobs:
-  inference:
+  fetch-latest-data:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,10 +21,9 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Run batch inference (if new data available)
+      - name: Fetch latest data (skip if no new data)
         env:
           HOPSWORKS_API_KEY: ${{ secrets.HOPSWORKS_API_KEY }}
-          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
         run: |
-          echo "Starting batch inference..."
-          python inference/batch_predict.py --if-new-data
+          echo "Starting hourly data fetch..."
+          python data_engineering/fetch_data.py --hourly

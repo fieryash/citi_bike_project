@@ -11,7 +11,7 @@ from yaml import safe_load
 CFG = safe_load(open("./configs/config.yaml"))
 
 # Force API key for Hopsworks
-FORCED_API_KEY = "4ktTHztzakUY85SG.tqOUvGeeLvSK1deXiDLKbKBhesmJcdrqcLiY9d2KXPkwZQKIwxSkK7GQ70xJM95d"
+FORCED_API_KEY = CFG["project"]["api_key"]
 HOPS_HOST = CFG["project"].get("host", "c.app.hopsworks.ai")
 
 def download_file(url: str, out_dir: Path) -> Path:

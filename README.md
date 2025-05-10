@@ -172,5 +172,3 @@ MIT License. See [LICENSE](LICENSE) for details.
 - [Streamlit](https://streamlit.io/)
 
 ---
-
-Feel free to further personalize this README with your name, screenshots, or additional usage notes!

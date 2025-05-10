@@ -136,8 +136,7 @@ All tunable parameters (data, model, training, MLflow, etc.) are in [`configs/co
 
 ## 👤 Authors
 
-- [Your Name Here]
-- [Your Collaborators]
+- Ashtik Mahapatra
 
 ---
 

@@ -8,6 +8,7 @@ import yaml
 import hopsworks
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 
 # ─────────────────── Load config ────────────────────
 CFG = yaml.safe_load(open(Path("./configs/config.yaml")))
@@ -43,25 +44,26 @@ def _load_frames():
     pred_df  = fs.get_feature_group("citibike_predictions", version=1).read()
     feats_df = fs.get_feature_group("citibike_features",   version=1).read()
 
-    # ── Ensure consistent dtypes & tz ────────────────────────────
+    # Remove excluded station
+    pred_df  = pred_df[~pred_df["start_station_id"].isin(["5788.13"])]
+    feats_df = feats_df[~feats_df["start_station_id"].isin(["5788.13"])]
+
     for df in (pred_df, feats_df):
         df["hour"] = pd.to_datetime(df["hour"], utc=True)
         df["start_station_id"] = df["start_station_id"].astype(str)
 
-    # ── Build id → name mapping (fallback to id str) ─────────────
     id2name_manual = {
         "6140.05": "W 21 St & 6 Ave",
         "5905.14": "University Pl & E 14 St",
         "5329.03": "West St & Chambers St",
     }
 
-    id2name_manual = {str(k): v for k, v in id2name_manual.items()}
     return pred_df, feats_df, id2name_manual
 
 pred_df, feats_df, ID2NAME = _load_frames()
 ALL_STATIONS = sorted(pred_df["start_station_id"].unique())
 
-def label(sid: int) -> str:
+def label(sid: str) -> str:
     return f"{sid} – {ID2NAME.get(sid, 'Unknown')}"
 
 # -------------------------------------------------------------------
@@ -146,29 +148,33 @@ else:
     col1.metric("MAE (joined horizon)", f"{mae:,.2f}")
     col2.metric("MAPE", mape_str)
 
-    tab_pred_act, tab_abs_err = st.tabs(["Pred vs Act", "Absolute Error"])
+    st.subheader("Actual vs Predicted Rides (Hourly Total)")
 
-    with tab_pred_act:
-        act = (
-            jsel.pivot(index="hour", columns="start_station_id", values="rides")
-            .rename(columns=ID2NAME)
-        )
-        st.subheader("Actual Rides")
-        st.line_chart(act)
+    # Aggregate across selected stations by hour
+    agg_df = (
+        jsel.groupby("hour")[["rides", "prediction"]]
+        .sum()
+        .reset_index()
+        .sort_values("hour")
+    )
 
-        pred = (
-            jsel.pivot(index="hour", columns="start_station_id", values="prediction")
-            .rename(columns=ID2NAME)
-        )
-        st.subheader("Predicted Rides")
-        st.line_chart(pred)
+    fig = px.line(
+        agg_df,
+        x="hour",
+        y=["rides", "prediction"],
+        title="Actual vs Predicted Hourly Rides (Aggregated)",
+        labels={"value": "Number of Rides", "hour": "Time", "variable": "Type"},
+        height=500,
+    )
 
-    with tab_abs_err:
-        err = (
-            jsel.pivot(index="hour", columns="start_station_id", values="abs_error")
-            .rename(columns=ID2NAME)
-        )
-        st.line_chart(err, height=300)
+    fig.update_traces(mode="lines+markers")
+    fig.update_layout(
+        legend_title_text="Type",
+        hovermode="x unified",
+        template="plotly_dark" if st.get_option("theme.base") == "dark" else "plotly"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
     with st.expander("🔍  Joined prediction / actual table"):
         jdisp = jsel.copy()

@@ -53,6 +53,7 @@ monitoring/*.log
 
 # Ignore Streamlit cache
 .streamlit/
+streamlit/secrets.toml
 
 # Ignore Hopsworks project creation script output
 hopsworks_project_create.py

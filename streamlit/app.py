@@ -18,6 +18,28 @@ st.set_page_config(
     layout="wide",
     page_icon="🚲",
 )
+# ─────────────────── Load config ────────────────────
+def load_config():
+    config_path = Path("./configs/config.yaml")
+    if config_path.exists():
+        cfg = yaml.safe_load(open(config_path))
+    else:
+        cfg = {}
+
+    # Override or fill from secrets if present
+    if "project" not in cfg:
+        cfg["project"] = {}
+
+    project_cfg = cfg["project"]
+    secrets_proj = st.secrets.get("project", {})
+
+    project_cfg["name"] = project_cfg.get("name") or secrets_proj.get("name")
+    project_cfg["host"] = project_cfg.get("host") or secrets_proj.get("host", "c.app.hopsworks.ai")
+    project_cfg["api_key"] = project_cfg.get("api_key") or secrets_proj.get("api_key")
+
+    return cfg
+
+CFG = load_config()
 
 # -------------------------------------------------------------------
 # 1️⃣  Sidebar navigation

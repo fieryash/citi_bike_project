@@ -1,0 +1,45 @@
+# ─────────────────── General project settings ───────────────────
+project:
+  name: citibike_trip_pred          # Hopsworks project name
+  host: c.app.hopsworks.ai          # leave as-is unless you’re on-prem
+  timezone: America/New_York
+  api_key: ${HOPSWORKS_API_KEY}
+
+# ─────────────────── Data & feature engineering ───────────────────
+data:
+  top_n_stations: 3                 # keep N busiest stations only
+  history_months: 12                # look-back horizon for raw ingestion
+  bucket: citibike-data             # S3/GS bucket where raw parquet lives
+
+# ─────────────────── Model hyper-parameters ───────────────────
+model:
+  type: lightgbm
+  lags: 28                          # number of lagged hours to create
+  features_top_k: 10                # how many top-importance lags to use
+  lgb_params:                       # <- this key was missing
+    n_estimators: 500
+    learning_rate: 0.05
+    objective: regression
+    num_leaves: 31
+    subsample: 0.8
+    colsample_bytree: 0.8
+    random_state: 42               # ties into training.random_state
+
+# ─────────────────── Training / evaluation ───────────────────
+training:
+  test_ratio: 0.2                   # 20 % tail of the time-series as test
+  random_state: 42
+
+# ─────────────────── MLflow tracking & artefact paths ───────────────────
+mlflow:
+  experiment_name: citibike_trip_pred_experiment
+  run_name: citibike_trip_pred_run
+  tracking_uri: http://localhost:5000
+  model_name: citibike_trip_pred   # registered name in MLflow
+  model_version: 1.0
+  model_path: models/citibike_trip_pred
+  data_path: data/
+  artifacts_path: artifacts/
+  metrics_path: metrics/
+  logs_path: logs/
+  config_path: configs/config.yaml

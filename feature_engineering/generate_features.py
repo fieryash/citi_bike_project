@@ -1,5 +1,6 @@
-import pandas as pd, numpy as np, hopsworks, pytz, yaml
+import pandas as pd, numpy as np, hopsworks, pytz, yaml, os
 from pathlib import Path
+import datetime as dt
 
 CFG = yaml.safe_load(open("./configs/config.yaml"))
 
@@ -75,7 +76,26 @@ def create_lag_features(df, lags=28):
     wide[lag_cols] = wide[lag_cols].fillna(0)
     return wide
 
+def is_new_data_present():
+    """Return True if there is a raw CSV in tmp_raw for the current month that does not have a corresponding cleaned parquet in tmp_raw/cleaned."""
+    today = dt.datetime.utcnow()
+    y, m = today.year, today.month
+    raw_dir = Path("tmp_raw")
+    clean_dir = raw_dir / "cleaned"
+    clean_dir.mkdir(exist_ok=True, parents=True)
+    # Look for any CSV for this month
+    pattern = f"{y}{str(m).zfill(2)}-citibike-tripdata*.csv"
+    for csv in raw_dir.glob(pattern):
+        parquet = clean_dir / (csv.stem + "_cleaned.parquet")
+        if not parquet.exists():
+            return True
+    return False
+
 def main():
+    if not is_new_data_present():
+        print("No new data to process for this month. Skipping feature generation.")
+        return
+
     hourly = get_hourly_counts_batched()
     features = create_lag_features(hourly, CFG["model"]["lags"])
     features.to_parquet("tmp_raw/citibike_features.parquet", index=False)

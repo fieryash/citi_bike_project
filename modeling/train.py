@@ -10,6 +10,7 @@ train.py ― Citi Bike hourly-rides forecasting
 import os
 import shutil
 from pathlib import Path
+import datetime as dt
 
 import pandas as pd
 import lightgbm as lgb
@@ -48,9 +49,24 @@ def train_model(df: pd.DataFrame, feature_cols: list[str]):
     return model, mae
 
 
+def is_new_features_present():
+    """Return True if features for the current month are present and updated in tmp_raw/citibike_features.parquet."""
+    features_path = Path("tmp_raw/citibike_features.parquet")
+    if not features_path.exists():
+        return False
+    # Check if features file was modified in the last 2 hours (to match hourly schedule)
+    mtime = dt.datetime.fromtimestamp(features_path.stat().st_mtime)
+    now = dt.datetime.utcnow()
+    return (now - mtime).total_seconds() < 2 * 3600
+
+
 # ─────────────────────────── main entry ─────────────────────────── #
 
 def main() -> None:
+    if not is_new_features_present():
+        print("No new features to train on. Skipping model training.")
+        return
+
     # 1️⃣  ── Connect to Hopsworks project
     project = hopsworks.login(
         project     = CFG["project"]["name"],

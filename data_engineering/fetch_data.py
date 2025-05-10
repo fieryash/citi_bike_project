@@ -52,6 +52,24 @@ def month_year_iter(start_year, start_month, end_year, end_month):
         y, m = divmod(ym, 12)
         yield y, m+1
 
+def is_new_data_available(latest_year, latest_month, out_dir):
+    """Check if the latest month's data is already present in tmp_raw."""
+    # Check for both .csv and .csv.zip
+    csv_name = f"{latest_year}{str(latest_month).zfill(2)}-citibike-tripdata.csv"
+    zip_name = f"{latest_year}{str(latest_month).zfill(2)}-citibike-tripdata.csv.zip"
+    zip2_name = f"{latest_year}{str(latest_month).zfill(2)}-citibike-tripdata.zip"
+    for fname in [csv_name, zip_name, zip2_name]:
+        if (out_dir / fname).exists():
+            return False  # Already present
+    return True
+
+def url_exists(url):
+    try:
+        r = requests.head(url, timeout=10)
+        return r.status_code == 200
+    except Exception:
+        return False
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--year", type=int, required=False)
@@ -60,8 +78,33 @@ def main():
     ap.add_argument("--start_month", type=int, required=False)
     ap.add_argument("--end_year", type=int, required=False)
     ap.add_argument("--end_month", type=int, required=False)
+    ap.add_argument("--hourly", action="store_true", help="Check for new data and only fetch/process if new data is available.")
     args = ap.parse_args()
     out_dir = Path("tmp_raw"); out_dir.mkdir(exist_ok=True)
+
+    # If --hourly, only fetch/process the latest month if new data is available
+    if args.hourly:
+        today = dt.datetime.utcnow()
+        latest_year = today.year
+        latest_month = today.month
+        if not is_new_data_available(latest_year, latest_month, out_dir):
+            print(f"No new data for {latest_year}-{latest_month:02d}. Skipping fetch.")
+            return
+        print(f"New data detected for {latest_year}-{latest_month:02d}. Fetching...")
+        args.year = latest_year
+        args.month = latest_month
+        # Only fetch the latest month and return after processing
+        url1 = f"https://s3.amazonaws.com/tripdata/{args.year}{str(args.month).zfill(2)}-citibike-tripdata.csv.zip"
+        url2 = f"https://s3.amazonaws.com/tripdata/{args.year}{str(args.month).zfill(2)}-citibike-tripdata.zip"
+        url = url1 if url_exists(url1) else url2 if url_exists(url2) else None
+        if url:
+            zip_path = download_file(url, out_dir)
+            csv_path = extract_zip(zip_path, out_dir)
+            if csv_path:
+                process_and_upload(csv_path, out_dir, f"clean_{args.year}_{str(args.month).zfill(2)}.parquet")
+        else:
+            print(f"No data file found for {args.year}-{args.month:02d}")
+        return
 
     # If no arguments, default to current year and previous two years
     if not any([args.year, args.month, args.start_year, args.start_month, args.end_year, args.end_month]):
@@ -70,14 +113,6 @@ def main():
         args.start_month = 1
         args.end_year = today.year
         args.end_month = today.month
-
-    # Helper to check if a file exists in the bucket
-    def url_exists(url):
-        try:
-            r = requests.head(url, timeout=10)
-            return r.status_code == 200
-        except Exception:
-            return False
 
     # Download yearly files if available, else download monthly files
     if args.start_year and args.start_month and args.end_year and args.end_month:

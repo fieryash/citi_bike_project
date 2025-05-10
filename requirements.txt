@@ -12,3 +12,4 @@ streamlit
 matplotlib
 plotly
 python-dotenv
+confluent-kafka

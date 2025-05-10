@@ -17,7 +17,9 @@ import numpy as np
 import mlflow
 import hopsworks
 import yaml
+import os
 
+FORCED_API_KEY = os.getenv("HOPSWORKS_API_KEY")
 # ─────────────────── Config ────────────────────
 CFG = yaml.safe_load(open(Path("./configs/config.yaml")))
 
@@ -34,7 +36,7 @@ def main():
     # 1️⃣  Connect to project
     project = hopsworks.login(
         project        = CFG["project"]["name"],
-        api_key_value  = CFG["project"]["api_key"],
+        api_key_value  = FORCED_API_KEY,
         host           = CFG["project"].get("host", "c.app.hopsworks.ai"),
     )
     fs = project.get_feature_store()

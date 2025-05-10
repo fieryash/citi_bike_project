@@ -23,6 +23,9 @@ import hopsworks
 
 from utils import CFG   # your yaml-backed config object
 
+import os
+
+FORCED_API_KEY = os.getenv("HOPSWORKS_API_KEY")
 # ─────────────────────────── helpers ─────────────────────────── #
 
 def load_features(project) -> pd.DataFrame:
@@ -70,7 +73,7 @@ def main() -> None:
     # 1️⃣  ── Connect to Hopsworks project
     project = hopsworks.login(
         project     = CFG["project"]["name"],
-        api_key_value = CFG["project"]["api_key"],
+        api_key_value = FORCED_API_KEY,
         host        = CFG["project"].get("host", "c.app.hopsworks.ai"),
     )
 
